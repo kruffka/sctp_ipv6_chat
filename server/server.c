@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <netinet/sctp.h>
 
@@ -224,7 +225,7 @@ int main(int argc, char **argv) {
         // Привязываем адрес
         serv_addr.sin6_family = AF_INET6;
         serv_addr.sin6_port = htons(CHAT_PORT);
-        inet_pton(AF_INET6, "::1", &serv_addr.sin6_addr);
+        inet_pton(AF_INET6, "0::1", &serv_addr.sin6_addr); // 0:0:0:0:0:0:0:1
 
         ret = bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
         if (ret < 0)
@@ -236,6 +237,19 @@ int main(int argc, char **argv) {
         ret = setsockopt(sockfd, IPPROTO_SCTP, SCTP_EVENTS, &events, sizeof(events));
         if (ret < 0)
                 die("setsockopt");
+
+
+        
+        if (getsockname(sockfd, (struct sockaddr *)&serv_addr, &len)) {
+                die("getsockname");
+        }
+
+        char s[INET6_ADDRSTRLEN] = {0};
+        if (inet_ntop(AF_INET6, &(serv_addr.sin6_addr), s, INET6_ADDRSTRLEN) == NULL) {
+                die("inet_ntop");
+        }
+	printf("[Server] IPv6:port -> %s:%d\n", s, ntohs(serv_addr.sin6_port));
+
 
 
         // struct sctp_initmsg initmsg;
@@ -461,7 +475,7 @@ int main(int argc, char **argv) {
                                 memset(buffer, 0, sizeof(buffer));
 
                                 while (clientP) { 
-
+                                        // может быть переполнение
                                         sprintf(buffer, "%s\n[Server] %s", buffer, clientP->name);
                                         clientP = clientP->next_client;
                                 }
@@ -577,7 +591,7 @@ int main(int argc, char **argv) {
                                 if (current_client->fileP[0]) fclose(current_client->fileP[0]);
                                 if (current_client->fname_upload) free(current_client->fname_upload);
 
-                                printf("[Server] closed fileP for [%d] <%s> %s\n", current_client->assoc_id, current_client->name, current_client->fileP[0]);
+                                printf("[Server] closed fileP for [%d] <%s> path %s\n", current_client->assoc_id, current_client->name, path);
                                 memset(buffer, 0, sizeof(buffer));
                                 cmd_found = 1;
                                 continue;
