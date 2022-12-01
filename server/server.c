@@ -528,6 +528,7 @@ int main(int argc, char **argv) {
                                                 printf("[%d] <%s>: No such file or directory to download file %s\n", current_client->assoc_id, current_client->name, path);
                                                 sprintf(sendbuffer, "[Server] No such file to download from server: %s\n", cmd);
                                                 nread = strlen(sendbuffer) + 1;
+                                                printf("nread %d\n", nread);
                                                 ret = sctp_sendmsg(sockfd, sendbuffer, nread, (struct sockaddr *) &client_addr6, len, 0, 0, 2, 0, 0);
                                                 if (ret < 0) {
                                                         printf("sctp_sendmsg()\n");
@@ -627,11 +628,17 @@ int main(int argc, char **argv) {
 
                         // Отправим имя файла в чат когда файл полностью загрузится
                         if (nread != sizeof(buffer)) {
-                                // Файл был загружен на сервер
-                                t = time(NULL);
-                                tm = *localtime(&t);
-                                sprintf(buffer, "(file): %s\n", current_client->fname_upload);
-
+                                if (strstr(buffer, "/fclose")) {
+                                        char path[48];
+                                        sprintf(path, "Downloads/%s", current_client->fname_upload);
+                                        remove(path);
+                                        memset(buffer, 0, sizeof(buffer));
+                                } else {
+                                        // Файл был загружен на сервер
+                                        t = time(NULL);
+                                        tm = *localtime(&t);
+                                        sprintf(buffer, "(file): %s\n", current_client->fname_upload);
+                                }
                                 free(current_client->fname_upload);
                                 fclose(current_client->fileP[0]);
                                 current_client->fname_upload = NULL;

@@ -116,7 +116,6 @@ int main(int argc, char *argv[]) {
                                                         printf("[Client] No such file or directory\n");
                                                         fflush(stdout);
                                                         sprintf(buffer, "/fclose");
-                                                        nread = strlen(buffer) + 1;
 
                                                         // stream 1 для отправки файлов на сервер
                                                         ret = sctp_sendmsg(sockfd, buffer, nread, (struct sockaddr *) &serv_addr, len, 0, 0, 1, 0, 0);
@@ -151,7 +150,7 @@ int main(int argc, char *argv[]) {
                                 }
 
                                 if (!strcmp(cmd, "/frecv")) {
-                                        // printf("\033[2K\r");
+                                        printf("\033[2K\r");
                                         printf("[Client] Trying to download file from server\n");
 
                                         char path[48];
@@ -188,7 +187,7 @@ int main(int argc, char *argv[]) {
 
                                                         ret = fwrite(buffer, 1, nread, file);
 
-                                                } while (nread == sizeof(buffer));  
+                                                } while (nread == sizeof(buffer));        
 
                                                 fclose(file);
                                                 printf("\033[2K\r");
