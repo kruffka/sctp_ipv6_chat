@@ -10,7 +10,8 @@
 #include <netinet/sctp.h>
 #include <string.h>
 
-char buffer[1024];
+char buffer[1548];
+
 
 #define STDIN 0
 #define CHAT_PORT 62324
@@ -127,12 +128,7 @@ int main(int argc, char *argv[]) {
                                                 }
                                                 do {
                                                         nread = fread(buffer, 1, sizeof(buffer), file);
-                                                        // printf("Client] Sent %d bytes\n", nread);
-
-                                                        if (nread <= 0) {
-                                                                break;
-                                                        }
-
+                                                        // printf("Client] Sent %d bytes.. buf %s\n", nread, buffer);
 
                                                         ret = sctp_sendmsg(sockfd, buffer, nread, (struct sockaddr *) &serv_addr, len, 0, 0, 1, 0, 0);
                                                         if (ret < 0) {
@@ -140,7 +136,7 @@ int main(int argc, char *argv[]) {
                                                                 exit(1);
 
                                                         }
-                                                } while (nread == sizeof(buffer));        
+                                                } while (ret == sizeof(buffer));        
 
                                                 fclose(file);
 
@@ -154,7 +150,8 @@ int main(int argc, char *argv[]) {
                                 }
 
                                 if (!strcmp(cmd, "/frecv")) {
-                                        // printf("\n[Client] Trying to download file from server\n");
+                                        printf("\033[2K\r");
+                                        printf("[Client] Trying to download file from server\n");
 
                                         char path[48];
                                         cmd = strtok(NULL, " \n");
@@ -176,6 +173,7 @@ int main(int argc, char *argv[]) {
                                                         continue;
                                                 }
 
+                                                
                                                 // принимаем файл и записываем его по пути Downloads/file_name
                                                 do {
 
@@ -184,12 +182,11 @@ int main(int argc, char *argv[]) {
                                                                 &len,
                                                                 NULL, NULL);
                                                         
-                                                        // printf("[Client] recv %d bytes\n", nread);
+                                                        // printf("[Client] recv %d bytes.. buf %s\n", nread, buffer);
 
 
-                                                        fwrite(buffer, 1, nread, file);
+                                                        ret = fwrite(buffer, 1, nread, file);
 
-                        
                                                 } while (nread == sizeof(buffer));        
 
                                                 fclose(file);
@@ -210,10 +207,9 @@ int main(int argc, char *argv[]) {
                                 }
                         }
 
-
                         printf("\033[2K\r");
                         fflush(stdout);
-                        write(1, buffer, nread);
+                                                if (sinfo.sinfo_stream == 0) write(1, buffer, nread);
                 }
 
 

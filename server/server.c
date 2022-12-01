@@ -202,7 +202,7 @@ int register_new_client(client_list_t *current_client) {
 }
 
 
-char buffer[1024];
+char buffer[1548];
 char sendbuffer[1548];
 
 int main(int argc, char **argv) {
@@ -416,7 +416,7 @@ int main(int argc, char **argv) {
 
                 
                 // команды, доступны только после регистрации/логирования
-                if (buffer[0] == '/') {
+                if (buffer[0] == '/' && sinfo.sinfo_stream == 0) {
                         
                         int cmd_found = 0;
                         // help message
